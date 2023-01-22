@@ -3,16 +3,7 @@
 
 const uint16_t LEDPIN = GPIO_Pin_9;
 
-const uint16_t leds_pins[] = {
-	GPIO_Pin_8,
-	GPIO_Pin_9,
-	GPIO_Pin_10,
-	GPIO_Pin_11,
-	GPIO_Pin_12,
-	GPIO_Pin_13,
-	GPIO_Pin_14,
-	GPIO_Pin_15
-};
+const uint16_t GPIO_pin_base_address = 0x0100;
 
 GPIO_TypeDef *LEDPORT = GPIOE;
 
@@ -31,17 +22,20 @@ void init(){
 	RCC_DeInit();
 	/* enable clock GPIO */
 	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOE, ENABLE);
-
-	for (uint8_t i = 0; i < sizeof(leds_pins)/sizeof(uint16_t); ++i)
+	
+	int addr = GPIO_pin_base_address;
+	for (uint8_t i = 0; i < 8; i++)
 	{
 		/* use LED pin */
-		gpio.GPIO_Pin = leds_pins[i];
+		gpio.GPIO_Pin = addr;
 		/* mode: output */
 		gpio.GPIO_Mode = GPIO_Mode_OUT;
 		/* output type: push-pull */
 		gpio.GPIO_OType = GPIO_OType_PP;
 		/* apply configuration */
 		GPIO_Init(LEDPORT, &gpio);
+		
+		addr+=addr;
 	}
 }
 
@@ -50,16 +44,19 @@ int main(void)
 	init();
 	/* main program loop */
 	for (;;) {
-		for (uint8_t i = 0; i < sizeof(leds_pins)/sizeof(uint16_t); ++i)
+		int addr = GPIO_pin_base_address;
+		for (uint8_t i = 0; i < 8; i++)
 		{
 			/* set led on */
-			GPIO_SetBits(LEDPORT, leds_pins[i]);
+			GPIO_SetBits(LEDPORT, addr);
 			/* delay */
 			simple_delay(100000);
 			/* clear led */
-			GPIO_ResetBits(LEDPORT, leds_pins[i]);
+			GPIO_ResetBits(LEDPORT, addr);
 			/* delay */
-			simple_delay(100000);	
+			simple_delay(100000);
+
+			addr+=addr;	
 		}
 	}
 
